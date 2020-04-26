@@ -1,0 +1,14 @@
+/build/
+/tf/app/.terraform/
+/tf/app/terraform.tfstate
+/tf/app/terraform.tfstate.backup
+/tf/s3-bucket/.terraform/
+/tf/s3-bucket/terraform.tfstate
+/tf/s3-bucket/terraform.tfstate.backup
+/tesla
+/tesla.zip
+/terraform.tfstate.backup
+/terraform.tfstate
+/init.done
+/deploy.done
+/.terraform/

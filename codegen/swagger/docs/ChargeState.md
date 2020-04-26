@@ -1,0 +1,50 @@
+# ChargeState
+
+## Properties
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**ChargingState** | **string** |  | [optional] [default to null]
+**FastChargerType** | **string** |  | [optional] [default to null]
+**FastChargerBrand** | **string** |  | [optional] [default to null]
+**ChargeLimitSoc** | **int32** |  | [optional] [default to null]
+**ChargeLimitSocStd** | **int32** |  | [optional] [default to null]
+**ChargeLimitSocMin** | **int32** |  | [optional] [default to null]
+**ChargeLimitSocMax** | **int32** |  | [optional] [default to null]
+**ChargeToMaxRange** | **bool** |  | [optional] [default to null]
+**MaxRangeChargeCounter** | **int32** |  | [optional] [default to null]
+**FastChargerPresent** | **bool** |  | [optional] [default to null]
+**BatteryRange** | **float64** |  | [optional] [default to null]
+**EstBatteryRange** | **float64** |  | [optional] [default to null]
+**IdealBatteryRange** | **float64** |  | [optional] [default to null]
+**BatteryLevel** | **int32** |  | [optional] [default to null]
+**UsableBatteryLevel** | **int32** |  | [optional] [default to null]
+**ChargeEnergyAdded** | **float64** |  | [optional] [default to null]
+**ChargeMilesAddedRated** | **float64** |  | [optional] [default to null]
+**ChargeMilesAddedIdeal** | **float64** |  | [optional] [default to null]
+**ChargerVoltage** | **int32** |  | [optional] [default to null]
+**ChargerPilotCurrent** | **int32** |  | [optional] [default to null]
+**ChargerActualCurrent** | **int32** |  | [optional] [default to null]
+**ChargerPower** | **int32** |  | [optional] [default to null]
+**TimeToFullCharge** | **float64** |  | [optional] [default to null]
+**TripCharging** | **bool** |  | [optional] [default to null]
+**ChargeRate** | **float64** |  | [optional] [default to null]
+**ChargePortDoorOpen** | **bool** |  | [optional] [default to null]
+**ConnChargeCable** | **string** |  | [optional] [default to null]
+**ScheduledChargingStartTime** | **string** |  | [optional] [default to null]
+**ScheduledChargingPending** | **bool** |  | [optional] [default to null]
+**UserChargeEnableRequest** | **bool** |  | [optional] [default to null]
+**ChargeEnableRequest** | **bool** |  | [optional] [default to null]
+**ChargerPhases** | **int32** |  | [optional] [default to null]
+**ChargePortLatch** | **string** |  | [optional] [default to null]
+**ChargeCurrentRequest** | **int32** |  | [optional] [default to null]
+**ChargeCurrentRequestMax** | **int32** |  | [optional] [default to null]
+**ManagedChargingActive** | **bool** |  | [optional] [default to null]
+**ManagedChargingUserCanceled** | **bool** |  | [optional] [default to null]
+**ManagedChargingStartTime** | **float32** |  | [optional] [default to null]
+**BatteryHeaterOn** | **bool** |  | [optional] [default to null]
+**NotEnoughPowerToHeat** | **bool** |  | [optional] [default to null]
+**Timestamp** | **float32** |  | [optional] [default to null]
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+
