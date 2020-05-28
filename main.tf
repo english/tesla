@@ -32,7 +32,7 @@ resource "aws_lambda_function" "tesla" {
     }
   }
 
-  depends_on = [aws_iam_role_policy_attachment.lambda_logs, aws_cloudwatch_log_group.log_group]
+  depends_on = [aws_iam_role_policy_attachment.lambda_logs, aws_cloudwatch_log_group.lambda]
 }
 
 resource "aws_iam_role" "tesla" {
@@ -53,6 +53,56 @@ resource "aws_iam_role" "tesla" {
   ]
 }
   EOF
+}
+
+resource "aws_api_gateway_account" "tesla" {
+  cloudwatch_role_arn = aws_iam_role.cloudwatch.arn
+}
+
+resource "aws_iam_role" "cloudwatch" {
+  name = "api_gateway_cloudwatch_global"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "cloudwatch" {
+  name = "default"
+  role = aws_iam_role.cloudwatch.id
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
 }
 
 resource "aws_api_gateway_rest_api" "tesla" {
@@ -93,7 +143,7 @@ resource "aws_lambda_permission" "apigw" {
   principal     = "apigateway.amazonaws.com"
 }
 
-resource "aws_cloudwatch_log_group" "log_group" {
+resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/tesla" # avoiding dependency on aws_lambda_function.tesla.function_name
   retention_in_days = 14
 }
@@ -126,10 +176,15 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = aws_iam_policy.lambda_logging.arn
 }
 
+resource "aws_cloudwatch_log_group" "apigw" {
+  name              = "API-Gateway-Execution-Logs_${aws_api_gateway_rest_api.tesla.id}/v1"
+  retention_in_days = 7
+}
+
 output "url" {
   value = aws_api_gateway_deployment.tesla.invoke_url
 }
 
 output "log_group_name" {
-  value = aws_cloudwatch_log_group.log_group.name
+  value = aws_cloudwatch_log_group.lambda.name
 }
