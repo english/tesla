@@ -67,3 +67,12 @@ get-access-token:
 					"password": "$(shell pass show tesla.com | head -n1)" \
 				}' \
 			| jq .
+
+.phony: get-vehicles
+get-vehicles:
+	@curl https://owner-api.teslamotors.com/api/1/vehicles \
+		--silent \
+		--show-error \
+		--dump-header - \
+		--header "Content-Type: application/json" \
+		--header "Authorization: Bearer $(shell pass show tesla/access-token)" \
