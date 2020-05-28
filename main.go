@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -18,6 +19,7 @@ func main() {
 
 func handler(ctx context.Context, evt events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	if err := authorize(evt); err != nil {
+		log.Printf("failed authorization: %s", err)
 		return makeResponse(http.StatusUnauthorized, err.Error()), nil
 	}
 
@@ -27,18 +29,22 @@ func handler(ctx context.Context, evt events.APIGatewayProxyRequest) (*events.AP
 
 	awake, err := wakeVehicle(c, ctx, vid)
 	if err != nil {
+		log.Printf("failed waking vehicle: %s", err)
 		return makeResponse(http.StatusBadGateway, err.Error()), nil
 	}
 
 	if !awake {
+		log.Print("tesla still sleeping...")
 		return makeResponse(http.StatusUnprocessableEntity, "sleeping"), nil
 	}
 
 	msg, err := toggleChargeDoor(c, ctx, vid)
 	if err != nil {
+		log.Printf("failed toggling charge door: %s", err)
 		return makeResponse(http.StatusBadGateway, err.Error()), nil
 	}
 
+	log.Printf("successfully toggled charge door: %s", msg)
 	return makeResponse(http.StatusOK, string(msg)), nil
 }
 
