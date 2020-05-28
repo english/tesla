@@ -14,7 +14,11 @@ test: deploy.done
 
 .PHONY: clean
 clean:
-	terraform destroy
+	terraform destroy \
+		-var "tesla_access_token=$(shell pass show tesla/access-token)" \
+		-var 'vehicle_id=$(shell pass show tesla/vehicle-id)' \
+		-var "token=$(shell pass show tesla/token)"
+
 	rm init.done deploy.done tesla.zip tesla
 
 init.done:
