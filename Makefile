@@ -40,25 +40,51 @@ tesla: main.go $(shell find codegen -type f)
 
 .PHONY: invoke
 invoke:
-	aws lambda invoke --region=eu-west-2 --function-name=tesla /dev/stderr
+	aws lambda invoke \
+		--region eu-west-2 \
+		--function-name tesla \
+		--invocation-type RequestResponse  \
+		--payload '{"body":"$(shell pass show tesla/token)"}' \
+		/dev/stderr
 
 .PHONY: lambda-logs
 lambda-logs:
-	aws logs get-log-events \
-		--log-group-name $(shell terraform output log_group_name) \
-		--log-stream-name $(shell aws logs describe-log-streams --log-group-name $(shell terraform output log_group_name) --query 'logStreams[*].logStreamName' | jq '.[-1]' | sed "s/\"/'/g")
+	aws logs --region eu-west-2 get-log-events \
+		--log-group-name $(shell terraform output lambda_log_group_name) \
+		--log-stream-name $(shell aws logs describe-log-streams \
+			--log-group-name "$(shell terraform output lambda_log_group_name)" \
+			--query 'logStreams[*].logStreamName' \
+			--order-by LastEventTime \
+			--descending \
+			--max-items 1 \
+			| jq '.[0]' \
+			| sed "s/\"/'/g")
+
+.PHONY: apigw-logs
+apigw-logs:
+	aws logs --region eu-west-2 get-log-events \
+		--log-group-name $(shell terraform output apigw_log_group_name) \
+		--log-stream-name $(shell aws logs describe-log-streams \
+			--log-group-name "$(shell terraform output apigw_log_group_name)" \
+			--query 'logStreams[*].logStreamName' \
+			--order-by LastEventTime \
+			--descending \
+			--max-items 1 \
+			| jq '.[0]' \
+			| sed "s/\"/'/g")
 
 .PHONY: tesla-swagger.yml
 tesla-swagger.yml:
 	wget -O tesla-swagger.yml https://raw.githubusercontent.com/jonahwh/tesla-api-client/master/swagger.yml
 
+.PHONY: generate-client
 generate-client:
 	docker run --rm -v ${PWD}:/local swaggerapi/swagger-codegen-cli generate \
 		-i /local/tesla-swagger.yml \
 		-l go \
 		-o /local/codegen/swagger
 
-.phony: get-access-token
+.PHONY: get-access-token
 get-access-token:
 	@curl https://owner-api.teslamotors.com/oauth/token \
 		--header "Content-Type: application/json" \
@@ -72,11 +98,11 @@ get-access-token:
 				}' \
 			| jq .
 
-.phony: get-vehicles
+.PHONY: get-vehicles
 get-vehicles:
 	@curl https://owner-api.teslamotors.com/api/1/vehicles \
 		--silent \
 		--show-error \
 		--dump-header - \
 		--header "Content-Type: application/json" \
-		--header "Authorization: Bearer $(shell pass show tesla/access-token)" \
+		--header "Authorization: Bearer $(shell pass show tesla/access-token)"
