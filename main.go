@@ -38,21 +38,23 @@ func handler(ctx context.Context, evt events.APIGatewayProxyRequest) (*events.AP
 		return makeResponse(http.StatusUnprocessableEntity, "sleeping"), nil
 	}
 
-	msg, err := toggleChargeDoor(c, ctx, vid)
+	ok, err := openChargeDoor(c, ctx, vid)
 	if err != nil {
-		log.Printf("failed toggling charge door: %s", err)
+		log.Printf("error opening charge door: %s", err)
 		return makeResponse(http.StatusBadGateway, err.Error()), nil
 	}
+	if !ok {
+		log.Print("didn't open charge door")
+		return makeResponse(http.StatusBadGateway, "didn't open charge door"), nil
+	}
 
-	log.Printf("successfully toggled charge door: %s", msg)
-	return makeResponse(http.StatusOK, string(msg)), nil
+	return makeResponse(http.StatusOK, "successfully opened charge door"), nil
 }
 
 func authorize(evt events.APIGatewayProxyRequest) error {
 	if evt.Body != os.Getenv("TOKEN") {
 		return fmt.Errorf("invalid token: %s", evt.Body)
 	}
-
 	return nil
 }
 
@@ -65,25 +67,6 @@ func wakeVehicle(c *swagger.APIClient, ctx context.Context, vid string) (bool, e
 	return resp.Response.State == "online", nil
 }
 
-func toggleChargeDoor(c *swagger.APIClient, ctx context.Context, vid string) (string, error) {
-	ok, err := openChargeDoor(c, ctx, vid)
-	if err != nil {
-		return "", fmt.Errorf("error opening charge port: %w", err)
-	}
-	if ok {
-		return "was closed, now open", nil
-	}
-
-	ok, reason, err := closeChargeDoor(c, ctx, vid)
-	if err != nil {
-		return "", fmt.Errorf("error closing charge port: %w", err)
-	}
-	if !ok {
-		return "", fmt.Errorf("failed closing charge port: %s", reason)
-	}
-	return "was open, now closed", nil
-}
-
 func openChargeDoor(c *swagger.APIClient, ctx context.Context, vid string) (bool, error) {
 	ocpr, _, err := c.VehicleCommandsApi.OpenChargePort(ctx, vid)
 	if err != nil {
@@ -93,20 +76,12 @@ func openChargeDoor(c *swagger.APIClient, ctx context.Context, vid string) (bool
 	return ocpr.Response.Result, nil
 }
 
-func closeChargeDoor(c *swagger.APIClient, ctx context.Context, vid string) (bool, string, error) {
-	resp, _, err := c.VehicleCommandsApi.CloseChargePort(ctx, vid)
-	if err != nil {
-		return false, "", err
-	}
-
-	return resp.Response.Result, resp.Response.Reason, nil
-}
-
 func makeTeslaClient() *swagger.APIClient {
 	cfg := swagger.NewConfiguration()
 	cfg.HTTPClient = &http.Client{
 		Timeout: 3 * time.Second,
 	}
+
 	return swagger.NewAPIClient(cfg)
 }
 
